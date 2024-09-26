@@ -20,7 +20,10 @@ class Post1Type extends AbstractType
             ->add('postText')
             ->add('postDateCreated', null, [
                 'widget' => 'single_text',
-                'empty_data' => date('Y-m-d'),
+                # non obligatoire
+                'required' => false,
+                # si vide on envoie la date du jour
+                'empty_data' => date('Y-m-d H:i:s'),
             ])
             ->add('postDatePublished', null, [
                 'widget' => 'single_text',
@@ -28,17 +31,21 @@ class Post1Type extends AbstractType
             ->add('postIsPublished')
             ->add('sections', EntityType::class, [
                 'class' => Section::class,
-                'choice_label' => 'id',
+                # choix du titre dans les checkboxes
+                'choice_label' => 'sectionTitle',
                 'multiple' => true,
-            ])/*
-            ->add('tags', EntityType::class, [
+                'expanded' => true,
+            ])
+            # on peut se passer des tags pour le moment
+            /*->add('tags', EntityType::class, [
                 'class' => Tag::class,
                 'choice_label' => 'id',
                 'multiple' => true,
+                'required' => false,
             ])*/
             ->add('user', EntityType::class, [
                 'class' => User::class,
-                'choice_label' => 'id',
+                'choice_label' => 'username',
             ])
         ;
     }

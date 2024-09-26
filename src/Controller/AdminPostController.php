@@ -19,6 +19,8 @@ final class AdminPostController extends AbstractController
     {
         return $this->render('admin_post/index.html.twig', [
             'posts' => $postRepository->findAll(),
+            'title' => 'Posts',
+            'homepage_text' => "Administration des Posts par {$this->getUser()->getUsername()}",
         ]);
     }
 
@@ -26,7 +28,9 @@ final class AdminPostController extends AbstractController
     public function new(Request $request, EntityManagerInterface $entityManager): Response
     {
         $post = new Post();
-        $form = $this->createForm(Post1Type::class, $post);
+        // on veut une date de création sans formulaire
+        $post->setPostDateCreated(new \DateTime());
+        $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -39,6 +43,8 @@ final class AdminPostController extends AbstractController
         return $this->render('admin_post/new.html.twig', [
             'post' => $post,
             'form' => $form,
+            'title' => 'New Post',
+            'homepage_text' => "Administration des Posts par {$this->getUser()->getUsername()}",
         ]);
     }
 
@@ -47,13 +53,15 @@ final class AdminPostController extends AbstractController
     {
         return $this->render('admin_post/show.html.twig', [
             'post' => $post,
+            'title' => 'Post',
+            'homepage_text' => "Administration des Posts par {$this->getUser()->getUsername()}",
         ]);
     }
 
     #[Route('/{id}/edit', name: 'app_admin_post_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Post $post, EntityManagerInterface $entityManager): Response
     {
-        $form = $this->createForm(Post1Type::class, $post);
+        $form = $this->createForm(PostType::class, $post);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
@@ -65,6 +73,8 @@ final class AdminPostController extends AbstractController
         return $this->render('admin_post/edit.html.twig', [
             'post' => $post,
             'form' => $form,
+            'title' => "Edit Post : {$post->getPostTitle()}",
+            'homepage_text' => "Administration des Posts par {$this->getUser()->getUsername()}",
         ]);
     }
 
