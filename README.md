@@ -1018,3 +1018,140 @@ On modifie `templates/admin/index.html.twig` pour le faire correspondre aux vari
     <p>{{ homepage_text }}</p>
 {% endblock %}
 ```
+
+## Modification des menus
+
+Suivant que l'on soit en front `templates/main/_menu.html.twig` ou en back `templates/admin/_menu.admin.html.twig`
+
+## Création du CRUD pour `Section`
+
+```bash
+php bin/console make:crud
+
+ The class name of the entity to create CRUD (e.g. AgreeableChef):
+ > Section
+Section
+
+ Choose a name for your controller class (e.g. SectionController) [SectionController]:
+ > AdminSectionController
+
+ Do you want to generate PHPUnit tests? [Experimental] (yes/no) [no]:
+ >
+
+ created: src/Controller/AdminSectionController.php
+ created: src/Form/SectionType.php
+ created: templates/admin_section/_delete_form.html.twig
+ created: templates/admin_section/_form.html.twig
+ created: templates/admin_section/edit.html.twig
+ created: templates/admin_section/index.html.twig
+ created: templates/admin_section/new.html.twig
+ created: templates/admin_section/show.html.twig
+
+
+  Success!
+
+
+ Next: Check your new CRUD by going to /admin/section/
+```
+
+On crée les liens dans la page d'accueil et le menu de l'admin vers 
+
+    <a href="{{ path('app_admin_section_index') }}">Crud Section</a>
+
+Ne pas oublier de mettre en commentaire une partie du formulaire `src/Form/SectionType.php`
+
+```php
+<?php
+
+namespace App\Form;
+
+use App\Entity\Post;
+use App\Entity\Section;
+use Symfony\Bridge\Doctrine\Form\Type\EntityType;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+class SectionType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('sectionTitle')
+            ->add('sectionDescription')
+            /*->add('posts', EntityType::class, [
+                'class' => Post::class,
+                'choice_label' => 'id',
+                'multiple' => true,
+            ])*/
+        ;
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => Section::class,
+        ]);
+    }
+}
+
+```
+
+## Affichage des sections sur le front
+
+Dans `src/Controller/MainController.php`
+
+```php
+# ....
+# appel du gestionnaire de section
+use App\Repository\SectionRepository;
+# ...
+// Création de l'url pour le détail d'une section
+    #[Route(
+        # chemin vers la section avec son id
+        path: '/section/{id}',
+        # nom du chemin
+        name: 'section',
+        # accepte l'id au format int positif uniquement
+        requirements: ['id' => '\d+'],
+        # si absent, donne 1 comme valeur par défaut
+        defaults: ['id'=>1])]
+
+    public function section(SectionRepository $sections, int $id): Response
+    {
+        // récupération de la section
+        $section = $sections->find($id);
+        return $this->render('main/section.html.twig', [
+            'title' => 'Section '.$section->getSectionTitle(),
+            'homepage_text'=> $section->getSectionDescription(),
+            'section' => $section,
+            'sections' => $sections->findAll(),
+        ]);
+    }
+    #...
+
+```
+
+Et dans le menu `templates/main/_menu.html.twig`
+
+```twig
+{# on va afficher les liens vers nos section #}
+              {% for section in sections %}
+                <li class="nav-item"><a class="nav-link" href="{{ path('section',{id:section.id}) }}">{{ section.sectionTitle }}</a></li>
+              {% endfor %}
+```
+
+### Création du template
+
+```twig
+{# templates/main/section.html.twig #}
+{% extends 'template.front.html.twig' %}
+
+{# on surcharge le block parent #}
+{% block title %}{{ parent() }} | {{ title }}{% endblock %}
+
+{% block header %}
+<h1>{{ title }}</h1>
+    <p>{{ homepage_text }}</p>
+{% endblock %}
+```

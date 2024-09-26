@@ -1,0 +1,16 @@
+{# templates/main/index.html.twig #}
+{% extends 'template.front.html.twig' %}
+
+{# on surcharge le block parent #}
+{% block title %}{{ parent() }} | {{ title }}{% endblock %}
+
+{% block header %}
+<h1 class="">{{ title }}</h1>
+    <p>{{ homepage_text }}</p>
+    {% for post in section.posts %}
+        {{ dump(post) }}
+        <h4>{{ post.postTitle }}</h4>
+        {% else %}
+        <h4>Pas encore d'article</h4>
+    {% endfor %}
+{% endblock %}
