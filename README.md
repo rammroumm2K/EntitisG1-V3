@@ -182,7 +182,7 @@ Changez cette ligne
     APP_SECRET=c6f06c078199d1f00879e1b9c146cddf
 en
 
-    APP_ENV=prod
+    APP_ENV=dev
     APP_SECRET=une_autre_clef_secrete_sécurité
 
 si vous retapez  `php bin/console debug:route`
@@ -968,4 +968,53 @@ Il faut utiliser un nombre de block adéquat pour nos pages de front
 
 ### Créer un contrôleur d'administration
 
-  php bin/console make:controller
+  php bin/console make:controller AdminController
+  
+Une route vers un dossier `admin` a été créée, on va vérifier si un rôle lui est attribué dans le fichier `config/packages/security.yaml`
+
+```yaml
+    # Easy way to control access for large sections of your site
+    # Note: Only the *first* access control that matches will be used
+    access_control:
+        - { path: ^/admin, roles: ROLE_ADMIN }
+        # - { path: ^/profile, roles: ROLE_USER }
+```
+
+Dorénavant, ce dossier (et sous-dossiers sont accessibles que par les `ROLE_ADMIN`)
+
+https://symfony.com/doc/current/security.html#roles
+
+## Création d'un contrôleur pour Admin
+
+    php bin/console make:controller AdminController
+
+On modifie le fichier pour passer certaines variables :
+
+`src/Controller/AdminController.php`
+```php
+# ...
+#[Route('/admin', name: 'app_admin')]
+    public function index(): Response
+    {
+        return $this->render('admin/index.html.twig', [
+            'title' => 'Administration',
+            'homepage_text' => "Bienvenue {$this->getUser()->getUsername()}",
+        ]);
+    }
+# ...
+```
+
+On duplique `templates/template.front.html.twig` en `templates/template.back.html.twig`. On modifiera ce template suivant les besoins.
+
+On modifie `templates/admin/index.html.twig` pour le faire correspondre aux variables du contrôleur
+
+```twig
+{% extends 'template.back.html.twig' %}
+
+{% block title %}{{ parent() }} | {{ title }}{% endblock %}
+
+{% block header %}
+    <h1>{{ title }}</h1>
+    <p>{{ homepage_text }}</p>
+{% endblock %}
+```
